@@ -49,7 +49,7 @@ class NewsApi:
                 return data_df
             
             data = response.json()
-            print(f"Всего {data["totalResults"]} новостных статей по данному запросу")
+            # print(f"Всего {data["totalResults"]} новостных статей по данному запросу")
 
             data_df = pd.concat([data_df, json_normalize(data["articles"])], ignore_index=True)
             page += 1
