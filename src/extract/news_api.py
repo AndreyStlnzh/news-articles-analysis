@@ -24,6 +24,7 @@ class NewsApi:
         keyword: str,
         date_from: str,
         date_to: str,
+        save_csv: bool=False
     ): 
         """
         Функция получения статей с NewsApi
@@ -46,6 +47,9 @@ class NewsApi:
             response = requests.get(url)
             if response.status_code != 200:
                 print(f"Получили {response.status_code}")
+                if save_csv:
+                    data_df.to_csv(f"data_{keyword}.csv")
+                    print(f"Сохранили данные в data_{keyword}.csv")
                 return data_df
             
             data = response.json()
@@ -53,6 +57,9 @@ class NewsApi:
 
             data_df = pd.concat([data_df, json_normalize(data["articles"])], ignore_index=True)
             page += 1
+        
+        
+
         
 
     def __get_url(
