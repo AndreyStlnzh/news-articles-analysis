@@ -29,7 +29,7 @@ class EtlFacade:
         self.word_stat_service: WordStatService = word_stat_service
 
 
-    def run_ETL_news_for_last_n_days(
+    async def run_ETL_news_for_last_n_days(
         self,
         keyword: str="apple",
         n: int=3
@@ -38,17 +38,19 @@ class EtlFacade:
         date_to = (datetime.now()).date().isoformat()
 
         data_df: pd.DataFrame = self.news_api.get_articles(keyword, date_from, date_to)
+        print("Данные извлечены")
         self.text_cleaner.preprocess_data(data_df)
 
         words, count = self.most_common_words.find_most_common_words(data_df)
         data_df: pd.DataFrame = self.sentiment_analysis.process_sentiment_analysis(data_df)
+        print("Данные успешно предобработаны")
 
         article_dtos = self.convert_df_to_dto(data_df)
-        self.article_service.save_articles(article_dtos)
-
         word_stat_dtos = self.words_and_counts_to_dto(words, count)
-        self.word_stat_service.save_word_stats(word_stat_dtos)
 
+        await self.article_service.save_articles(article_dtos)
+        await self.word_stat_service.save_word_stats(word_stat_dtos)
+        print("Таблицы БД успешно пополнены")
 
     def convert_df_to_dto(
         self,

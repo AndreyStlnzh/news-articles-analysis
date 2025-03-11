@@ -4,7 +4,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 
 from src.db.db_connection import Base
 
-class ArticleModel(Base):
+class Article(Base):
     author: Mapped[str]
     title: Mapped[str]
     description: Mapped[str]

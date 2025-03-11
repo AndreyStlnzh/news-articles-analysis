@@ -49,7 +49,7 @@ class TextCleaner:
         self,
     ) -> None:
         """Удаляем дубликаты по 'title' и 'content'"""
-        self.data._drop_duplicates(subset=["title", "content"], inplace=True)
+        self.data.drop_duplicates(subset=["title", "content"], inplace=True)
 
 
     def _text_preprocessing(
@@ -57,7 +57,7 @@ class TextCleaner:
     ) -> None:
         """Очищаем текст в 'title', 'description' и 'content'"""
         for col in ["title", "description", "content"]:
-            self.self.data[col] = self.self.data[col].astype(str).apply(self._clean_text)
+            self.data[col] = self.data[col].astype(str).apply(self._clean_text)
 
     def _clean_text(
         self, 

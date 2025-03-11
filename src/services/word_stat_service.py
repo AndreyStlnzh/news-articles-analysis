@@ -16,14 +16,16 @@ class WordStatService:
         word_stats: List[WordStatDTO],
     ) -> None:
         for word_stat in word_stats:
-            self.word_stat_repo.create_word_stat(word_stat)
+            await self.word_stat_repo.create_word_stat(word_stat)
+
+        print("Статистика успешно сохранена")
 
 
     async def get_word_stat_by_id(
         self,
         word_stat_id: int,
     ) -> WordStatDTO | None:
-        return self.word_stat_repo.get_word_stat_by_id(word_stat_id)
+        return await self.word_stat_repo.get_word_stat_by_id(word_stat_id)
     
 
     async def get_all_word_stats(
@@ -31,4 +33,4 @@ class WordStatService:
         limit: int=10,
         offset: int=0,
     ) -> List[WordStatDTO]:
-        return self.word_stat_repo.get_all_word_stats(limit, offset)
+        return await self.word_stat_repo.get_all_word_stats(limit, offset)

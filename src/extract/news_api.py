@@ -1,10 +1,9 @@
 import requests
 import pandas as pd
 
-from datetime import datetime
 from pandas import json_normalize
 
-from src.env_container import env_container
+from src.config import settings
 
 class NewsApi:
     """
@@ -58,9 +57,6 @@ class NewsApi:
             data_df = pd.concat([data_df, json_normalize(data["articles"])], ignore_index=True)
             page += 1
         
-        
-
-        
 
     def __get_url(
         self, 
@@ -85,6 +81,6 @@ class NewsApi:
             url (str): url для получения необходимых статей
         """
         url = f"{self._new_api_url}?q={keyword}&from={date_from}&to={date_to}&page={page}"
-        url = f"{url}&apiKey={env_container.key_api}"
+        url = f"{url}&apiKey={settings.KEY_API}"
 
         return url

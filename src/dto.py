@@ -13,4 +13,4 @@ class ArticleDTO(BaseModel):
 
 class WordStatDTO(BaseModel):
     word: str
-    count: str
+    count: int

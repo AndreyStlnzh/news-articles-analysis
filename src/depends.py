@@ -21,4 +21,11 @@ word_stat_repo: WordStatRepo = WordStatRepo(async_session_maker)
 article_service: ArticleService = ArticleService(article_repo)
 word_stat_service: WordStatService = WordStatService(word_stat_repo)
 
-etl_facade = EtlFacade(news_api)
+etl_facade = EtlFacade(
+    news_api=news_api,
+    text_cleaner=text_cleaner,
+    most_common_words=most_common_words,
+    sentiment_analysis=sentiment_analysis,
+    article_service=article_service,
+    word_stat_service=word_stat_service,
+)
