@@ -10,3 +10,7 @@ class ArticleDTO(BaseModel):
     publishedAt: datetime
     content: str
     sentiment: str
+
+class WordStatDTO(BaseModel):
+    word: str
+    count: str

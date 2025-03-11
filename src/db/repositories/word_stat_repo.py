@@ -1,11 +1,11 @@
 from typing import List
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
-from src.db.models.article_model import ArticleModel
-from src.dto import ArticleDTO
+from src.db.models.word_stat_model import WordStatModel
+from src.dto import WordStatDTO
 
 
-class ArticleRepo:
+class WordStatRepo:
 
     def __init__(
         self,
@@ -14,39 +14,39 @@ class ArticleRepo:
         self.session: AsyncSession = session
 
 
-    async def create_article(
+    async def create_word_stat(
         self,
-        article_dto: ArticleDTO,
+        word_stat_dto: WordStatDTO,
     ) -> int:
         """Создает новую статью в БД и возвращает её ID"""
 
-        new_article = ArticleModel(**article_dto.model_dump())
+        new_stat = WordStatModel(**word_stat_dto.model_dump())
 
-        self.session.add(new_article)
+        self.session.add(new_stat)
         await self.session.commit()
-        await self.session.refresh(new_article)
+        await self.session.refresh(new_stat)
 
-        return new_article.id
+        return new_stat.id
     
 
-    async def get_article_by_id(
+    async def get_word_stat_by_id(
         self,
-        article_id: int,
-    ) -> ArticleDTO | None:
+        stat_id: int,
+    ) -> WordStatDTO | None:
         """Возвращает статью по ID, если она существует"""
-        query = select(ArticleModel).where(ArticleModel.id == article_id)
+        query = select(WordStatModel).where(WordStatModel.id == stat_id)
         result = await self.session.execute(query)
         return result.scalar_one_or_none()
     
 
-    async def get_all_articles(
+    async def get_all_word_stats(
         self,
         limit: int=10,
         offset: int=0,
-    ) -> List[ArticleDTO]:
+    ) -> List[WordStatDTO]:
         """Возвращает список всех статей с пагинацией"""
-        query = select(ArticleModel).limit(limit).offset(offset)
+        query = select(WordStatModel).limit(limit).offset(offset)
         result = await self.session.execute(query)
-        articles = result.scalars().all()
+        stats = result.scalars().all()
 
-        return [ArticleDTO.model_validate(article) for article in articles]
+        return [WordStatDTO.model_validate(stat) for stat in stats]
