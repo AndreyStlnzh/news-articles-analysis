@@ -13,7 +13,7 @@ class Settings(BaseSettings):
     DB_PORT: int
     DB_NAME: str
 
-    MINIO_BACK_URL: str
+    MINIO_URL: str
     MINIO_ACCESS_KEY: str
     MINIO_SECRET_KEY: str
     MINIO_BUCKET: str
@@ -23,10 +23,18 @@ class Settings(BaseSettings):
         env_file=".env"
     )
 
+
     def get_db_url(self):
         return (f"postgresql+asyncpg://{self.DB_USER}:{self.DB_PASSWORD}@"
                 f"{self.DB_HOST}:{self.DB_PORT}/{self.DB_NAME}")
+    
+
+    def get_minio_client_settings(self):
+        return {
+            "endpoint": self.MINIO_URL,
+            "access_key": self.MINIO_ACCESS_KEY,
+            "secret_key": self.MINIO_SECRET_KEY,
+            "secure": False,
+        }
 
 settings = Settings()
-
-print(settings.get_db_url())

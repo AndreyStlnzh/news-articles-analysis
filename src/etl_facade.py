@@ -1,9 +1,11 @@
 from datetime import datetime, timedelta
-from typing import List
+from io import BytesIO
+from typing import List, Tuple
 
 import pandas as pd
 from src.dto import ArticleDTO, WordStatDTO
 from src.extract.news_api import NewsApi
+from src.minio.minio_client import MinioClient
 from src.services.article_service import ArticleService
 from src.services.word_stat_service import WordStatService
 from src.transform.most_common_words import MostCommonWords
@@ -20,6 +22,7 @@ class EtlFacade:
         sentiment_analysis: SentimentAnalysis,
         article_service: ArticleService,
         word_stat_service: WordStatService,
+        minio_client: MinioClient,
     ) -> None:
         self.news_api: NewsApi = news_api
         self.text_cleaner: TextCleaner = text_cleaner
@@ -27,6 +30,7 @@ class EtlFacade:
         self.sentiment_analysis: SentimentAnalysis = sentiment_analysis
         self.article_service: ArticleService = article_service
         self.word_stat_service: WordStatService = word_stat_service
+        self.minio_client: MinioClient = minio_client
 
 
     async def run_ETL_news_for_last_n_days(
@@ -51,6 +55,10 @@ class EtlFacade:
         await self.article_service.save_articles(article_dtos)
         await self.word_stat_service.save_word_stats(word_stat_dtos)
         print("Таблицы БД успешно пополнены")
+
+        csv_buffer, len_csv_bytes = self.df_to_bytes(data_df)
+        self.minio_client.upload_csv(csv_buffer, len_csv_bytes)
+        print("CSV успешно загружен в MinIO")
 
     def convert_df_to_dto(
         self,
@@ -81,3 +89,21 @@ class EtlFacade:
             )
             for i in range(len(words))
         ]
+
+    def df_to_bytes(
+        self,
+        data: pd.DataFrame,
+    ) -> Tuple[BytesIO, int]:
+        """
+        Возвращает pd.Dataframe в виде байтового потока
+
+        Args:
+            data (pd.DataFrame): DataFrame, который необходимо преобразовать
+
+        Returns:
+            Tuple[BytesIO, int]: Буфер в памяти, содержащий CSV-данные
+                                в кодировке UTF-8, длина csv_bytes
+        """
+        csv_bytes = data.to_csv().encode("utf-8")
+        csv_buffer = BytesIO(csv_bytes)
+        return csv_buffer, len(csv_bytes)
