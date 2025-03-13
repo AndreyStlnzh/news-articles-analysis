@@ -17,9 +17,10 @@ class MinioClient:
         self._bucket_name = settings.MINIO_BUCKET
 
 
-    def upload_csv(
+    def upload_file(
             self,
             buffer: BytesIO,
+            minio_path: str,
             len_csv_bytes: int
     ) -> str:
         """
@@ -32,38 +33,34 @@ class MinioClient:
         Returns:
             str: путь к загруженному объекту в MinIO 
         """
-        minio_path = f"csv/data_{datetime.now().isoformat(timespec='seconds')}.csv"
         self._minio_client.put_object(
             bucket_name=self._bucket_name,
             object_name=minio_path,
             data=buffer,
             length=len_csv_bytes,
-            # content_type='application/csv',
         )
 
-        return minio_path
 
     def download_file(
             self,
             object_name: str
-    ):
+    ) -> bytes:
         """
-        Скачивает CSV-файл из MinIO и загружает его в DataFrame.
+        Скачивает файл из MinIO и возвращает как bytes.
 
         Аргументы:
             object_name (str): Имя объекта (путь в бакете).
 
         Возвращает:
-            pd.DataFrame: DataFrame с содержимым CSV-файла.
+            bytes: файл в виде байтов.
         """
-        minio_path = f"csv/filename"
         response = self._minio_client.get_object(
             bucket_name=self._bucket_name,
-            object_name=minio_path,
+            object_name=object_name,
         )
-        csv_data = response.read()
-        return bytes
-        # buffer = BytesIO(csv_data)
+        bytes_file = response.read()
+        return bytes_file
+        
 
     def delete_file(
             self,

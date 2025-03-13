@@ -4,13 +4,13 @@ from typing import List, Tuple
 
 import pandas as pd
 from src.dto import ArticleDTO, WordStatDTO
-from src.extract.news_api import NewsApi
-from src.minio.minio_client import MinioClient
-from src.services.article_service import ArticleService
-from src.services.word_stat_service import WordStatService
-from src.transform.most_common_words import MostCommonWords
-from src.transform.sentiment_analysis import SentimentAnalysis
-from src.transform.text_cleaner import TextCleaner
+from src.extract import NewsApi
+from src.load.save_to_db import SaveToDB
+from src.transform import MostCommonWords
+from src.transform import SentimentAnalysis
+from src.transform import TextCleaner
+from src.load import SaveToMinio
+
 
 
 class EtlFacade:
@@ -20,17 +20,15 @@ class EtlFacade:
         text_cleaner: TextCleaner,
         most_common_words: MostCommonWords,
         sentiment_analysis: SentimentAnalysis,
-        article_service: ArticleService,
-        word_stat_service: WordStatService,
-        minio_client: MinioClient,
+        save_to_db: SaveToDB,
+        save_to_minio: SaveToMinio,
     ) -> None:
         self.news_api: NewsApi = news_api
         self.text_cleaner: TextCleaner = text_cleaner
         self.most_common_words: MostCommonWords = most_common_words
         self.sentiment_analysis: SentimentAnalysis = sentiment_analysis
-        self.article_service: ArticleService = article_service
-        self.word_stat_service: WordStatService = word_stat_service
-        self.minio_client: MinioClient = minio_client
+        self.save_to_db: SaveToDB = save_to_db
+        self.save_to_minio: SaveToMinio = save_to_minio
 
 
     async def run_ETL_news_for_last_n_days(
@@ -41,69 +39,20 @@ class EtlFacade:
         date_from = (datetime.now() - timedelta(days=n)).date().isoformat()
         date_to = (datetime.now()).date().isoformat()
 
+        # Extract
         data_df: pd.DataFrame = self.news_api.get_articles(keyword, date_from, date_to)
-        print("Данные извлечены")
-        self.text_cleaner.preprocess_data(data_df)
+        print(f"Данные извлечены. Всего {len(data_df)} статей")
 
+        # Transform
+        self.text_cleaner.preprocess_data(data_df)
         words, count = self.most_common_words.find_most_common_words(data_df)
         data_df: pd.DataFrame = self.sentiment_analysis.process_sentiment_analysis(data_df)
         print("Данные успешно предобработаны")
 
-        article_dtos = self.convert_df_to_dto(data_df)
-        word_stat_dtos = self.words_and_counts_to_dto(words, count)
-
-        await self.article_service.save_articles(article_dtos)
-        await self.word_stat_service.save_word_stats(word_stat_dtos)
+        # Load
+        await self.save_to_db.save_dataframe_to_db(data_df, words, count)
         print("Таблицы БД успешно пополнены")
-
-        csv_buffer, len_csv_bytes = self.df_to_bytes(data_df)
-        self.minio_client.upload_csv(csv_buffer, len_csv_bytes)
+        self.save_to_minio.save_csv_to_minio(data_df)
         print("CSV успешно загружен в MinIO")
-
-    def convert_df_to_dto(
-        self,
-        data: pd.DataFrame,
-    ) -> List[ArticleDTO]:
-        return [
-            ArticleDTO(
-                author=row.author,
-                title=row.title,
-                description=row.description,
-                url=row.url,
-                publishedAt=row.publishedAt,
-                content=row.content,
-                sentiment=row.sentiment,
-            )
-            for _, row in data.iterrows()
-        ]
-    
-    def words_and_counts_to_dto(
-        self,
-        words: List[str],
-        count: List[int],
-    ) -> List[WordStatDTO]:
-        return [
-            WordStatDTO(
-                word=words[i],
-                count=count[i]
-            )
-            for i in range(len(words))
-        ]
-
-    def df_to_bytes(
-        self,
-        data: pd.DataFrame,
-    ) -> Tuple[BytesIO, int]:
-        """
-        Возвращает pd.Dataframe в виде байтового потока
-
-        Args:
-            data (pd.DataFrame): DataFrame, который необходимо преобразовать
-
-        Returns:
-            Tuple[BytesIO, int]: Буфер в памяти, содержащий CSV-данные
-                                в кодировке UTF-8, длина csv_bytes
-        """
-        csv_bytes = data.to_csv().encode("utf-8")
-        csv_buffer = BytesIO(csv_bytes)
-        return csv_buffer, len(csv_bytes)
+        self.save_to_minio.save_dataframe_to_parquet(data_df)
+        print("parquet успешно загружен в MinIO")
