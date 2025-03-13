@@ -1,7 +1,6 @@
-from datetime import datetime
-from io import BytesIO
-import os
 import minio
+
+from io import BytesIO
 
 from src.config import settings
 

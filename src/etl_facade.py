@@ -1,16 +1,13 @@
-from datetime import datetime, timedelta
-from io import BytesIO
-from typing import List, Tuple
-
 import pandas as pd
-from src.dto import ArticleDTO, WordStatDTO
+
+from datetime import datetime, timedelta
+
 from src.extract import NewsApi
 from src.load.save_to_db import SaveToDB
 from src.transform import MostCommonWords
 from src.transform import SentimentAnalysis
 from src.transform import TextCleaner
 from src.load import SaveToMinio
-
 
 
 class EtlFacade:

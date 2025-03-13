@@ -1,7 +1,7 @@
+import pandas as pd
+
 from datetime import datetime
 from io import BytesIO
-from typing import Tuple
-import pandas as pd
 from src.minio.minio_client import MinioClient
 
 

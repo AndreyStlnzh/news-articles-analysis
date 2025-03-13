@@ -1,7 +1,7 @@
-from matplotlib import pyplot as plt
 import nltk
 import pandas as pd
 
+from matplotlib import pyplot as plt
 from nltk.sentiment import SentimentIntensityAnalyzer
 
 

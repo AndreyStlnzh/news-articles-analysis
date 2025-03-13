@@ -1,6 +1,6 @@
-from typing import Tuple
 import pandas as pd
 
+from typing import Tuple
 from collections import Counter
 from matplotlib import pyplot as plt
 
