@@ -20,7 +20,7 @@ class SaveToDB:
         self,
         data_df: pd.DataFrame,
         words: List[str],
-        count: List[int],
+        counts: List[int],
     ):
         """
         Функция сохранения необходимых данных в БД
@@ -31,7 +31,7 @@ class SaveToDB:
             count (List[int]): частотность самых частых слов
         """
         article_dtos = self.convert_df_to_dto(data_df)
-        word_stat_dtos = self.words_and_counts_to_dto(words, count)
+        word_stat_dtos = self.words_and_counts_to_dto(words, counts)
 
         await self.article_service.save_articles(article_dtos)
         await self.word_stat_service.save_word_stats(word_stat_dtos)

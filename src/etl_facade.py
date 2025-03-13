@@ -1,3 +1,4 @@
+from typing import List, Tuple
 import pandas as pd
 
 from datetime import datetime, timedelta
@@ -28,6 +29,42 @@ class EtlFacade:
         self.save_to_minio: SaveToMinio = save_to_minio
 
 
+    def extract(
+        self,
+        keyword: str,
+        date_from: datetime,
+        date_to: datetime,
+    ) -> pd.DataFrame:
+        data_df: pd.DataFrame = self.news_api.get_articles(keyword, date_from, date_to)
+        print(f"Данные извлечены. Всего {len(data_df)} статей")
+        return data_df
+
+
+    def transform(
+        self,
+        data_df: pd.DataFrame,
+    ) -> Tuple[pd.DataFrame, List[str], List[int]]:
+        self.text_cleaner.preprocess_data(data_df)
+        words, counts = self.most_common_words.find_most_common_words(data_df)
+        data_df: pd.DataFrame = self.sentiment_analysis.process_sentiment_analysis(data_df)
+        print("Данные успешно предобработаны")
+        return data_df, words, counts
+
+
+    async def load(
+        self,
+        data_df: pd.DataFrame,
+        words: List[str],
+        counts: List[int],
+    ) -> None:
+        await self.save_to_db.save_dataframe_to_db(data_df, words, counts)
+        print("Таблицы БД успешно пополнены")
+        self.save_to_minio.save_csv_to_minio(data_df)
+        print("CSV успешно загружен в MinIO")
+        self.save_to_minio.save_dataframe_to_parquet(data_df)
+        print("parquet успешно загружен в MinIO")
+
+
     async def run_ETL_news_for_last_n_days(
         self,
         keyword: str="apple",
@@ -37,19 +74,10 @@ class EtlFacade:
         date_to = (datetime.now()).date().isoformat()
 
         # Extract
-        data_df: pd.DataFrame = self.news_api.get_articles(keyword, date_from, date_to)
-        print(f"Данные извлечены. Всего {len(data_df)} статей")
-
+        data_df = self.extract(keyword, date_from, date_to)
+        
         # Transform
-        self.text_cleaner.preprocess_data(data_df)
-        words, count = self.most_common_words.find_most_common_words(data_df)
-        data_df: pd.DataFrame = self.sentiment_analysis.process_sentiment_analysis(data_df)
-        print("Данные успешно предобработаны")
+        data_df, words, counts = self.transform(data_df)
 
         # Load
-        await self.save_to_db.save_dataframe_to_db(data_df, words, count)
-        print("Таблицы БД успешно пополнены")
-        self.save_to_minio.save_csv_to_minio(data_df)
-        print("CSV успешно загружен в MinIO")
-        self.save_to_minio.save_dataframe_to_parquet(data_df)
-        print("parquet успешно загружен в MinIO")
+        await self.load(data_df, words, counts)
