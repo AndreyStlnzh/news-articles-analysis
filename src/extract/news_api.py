@@ -44,6 +44,7 @@ class NewsApi:
 
             print(f"Обращаемся по адресу {url}")
             response = requests.get(url)
+            print(response.status_code)
             if response.status_code != 200:
                 print(f"Получили {response.status_code}")
                 if save_csv:
@@ -51,6 +52,7 @@ class NewsApi:
                     print(f"Сохранили данные в data_{keyword}.csv")
                 return data_df
             
+            print("Приняли результат, начинаем обработку")
             data = response.json()
             # print(f"Всего {data["totalResults"]} новостных статей по данному запросу")
 

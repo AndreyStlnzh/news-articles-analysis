@@ -14,17 +14,13 @@ from src.load import SaveToMinio
 class EtlFacade:
     def __init__(
         self,
-        news_api: NewsApi,
-        text_cleaner: TextCleaner,
-        most_common_words: MostCommonWords,
-        sentiment_analysis: SentimentAnalysis,
         save_to_db: SaveToDB,
         save_to_minio: SaveToMinio,
     ) -> None:
-        self.news_api: NewsApi = news_api
-        self.text_cleaner: TextCleaner = text_cleaner
-        self.most_common_words: MostCommonWords = most_common_words
-        self.sentiment_analysis: SentimentAnalysis = sentiment_analysis
+        self.news_api: NewsApi = NewsApi()
+        self.text_cleaner: TextCleaner = TextCleaner()
+        self.most_common_words: MostCommonWords = MostCommonWords()
+        self.sentiment_analysis: SentimentAnalysis = SentimentAnalysis()
         self.save_to_db: SaveToDB = save_to_db
         self.save_to_minio: SaveToMinio = save_to_minio
 
@@ -35,6 +31,7 @@ class EtlFacade:
         date_from: datetime,
         date_to: datetime,
     ) -> pd.DataFrame:
+        """Extraction"""
         data_df: pd.DataFrame = self.news_api.get_articles(keyword, date_from, date_to)
         print(f"Данные извлечены. Всего {len(data_df)} статей")
         return data_df
@@ -44,6 +41,7 @@ class EtlFacade:
         self,
         data_df: pd.DataFrame,
     ) -> Tuple[pd.DataFrame, List[str], List[int]]:
+        """Transformation"""
         self.text_cleaner.preprocess_data(data_df)
         words, counts = self.most_common_words.find_most_common_words(data_df)
         data_df: pd.DataFrame = self.sentiment_analysis.process_sentiment_analysis(data_df)
@@ -57,6 +55,7 @@ class EtlFacade:
         words: List[str],
         counts: List[int],
     ) -> None:
+        """Load"""
         await self.save_to_db.save_dataframe_to_db(data_df, words, counts)
         print("Таблицы БД успешно пополнены")
         self.save_to_minio.save_csv_to_minio(data_df)

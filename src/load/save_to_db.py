@@ -1,7 +1,5 @@
-
-
-from typing import List
 import pandas as pd
+from typing import List
 from src.dto import ArticleDTO, WordStatDTO
 from src.services.article_service import ArticleService
 from src.services.word_stat_service import WordStatService
