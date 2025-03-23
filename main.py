@@ -1,4 +1,5 @@
 import asyncio
+from src.db.db_connection import create_db_and_tables
 from src.etl_facade import EtlFacade
 from src.services.dependecies import (
     save_to_db,
@@ -6,6 +7,8 @@ from src.services.dependecies import (
 )
 
 async def main():
+    await create_db_and_tables()
+
     etl_facade = EtlFacade(
         save_to_db=save_to_db,
         save_to_minio=save_to_minio

@@ -1,21 +1,21 @@
 services:
-  # postgres:
-  #   image: postgres:15.9
-  #   restart: always
-  #   environment:
-  #     - POSTGRES_USER=${POSTGRES_USER}
-  #     - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-  #     - POSTGRES_DB=${POSTGRES_DB_NAME}
-  #   ports:
-  #    - "5432:5432"
-  #   volumes:
-  #     - ./data/postgres/data:/var/lib/postgres/data
-  #   healthcheck:
-  #     test: [ "CMD-SHELL", "pg_isready", "-U ${POSTGRES_USER}", "-d ${POSTGRES_DB_NAME}" ]
-  #     interval: 30s
-  #     timeout: 10s
-  #     retries: 5
-  #     start_period: 80s
+  postgres:
+    image: postgres:15.9
+    restart: always
+    environment:
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+      - POSTGRES_DB=${DB_NAME}
+    ports:
+     - "5432:5432"
+    volumes:
+      - ./data/postgres/data:/var/lib/postgres/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready", "-U ${POSTGRES_USER}", "-d ${POSTGRES_DB_NAME}" ]
+      interval: 30s
+      timeout: 10s
+      retries: 5
+      start_period: 80s
 
   minio:
     image: minio/minio
@@ -27,12 +27,11 @@ services:
     env_file:
       - .env
 
-  # portion_service:
-  #   build:
-  #     dockerfile: ./Dockerfile
-  #     target: main
-  #   restart: always
-  #   ports:
-  #     - "8003:8003"
-  #   env_file:
-  #     - .env
+  news_service:
+    build:
+      context: .
+    depends_on:
+      - postgres
+      - minio
+    env_file:
+      - .env

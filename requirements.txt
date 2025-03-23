@@ -1,7 +1,9 @@
 asyncpg==0.30.0
+minio==7.2.15
 matplotlib==3.10.1
 nltk==3.9.1
 pandas==2.2.3
+pyarrow
 pydantic==2.10.6
 pydantic_settings==2.8.1
 Requests==2.32.3
