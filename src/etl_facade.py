@@ -69,6 +69,13 @@ class EtlFacade:
         keyword: str="apple",
         n: int=3
     ):
+        """
+        Функция запуска etl процесса
+
+        Args:
+            keyword (str, optional): ключевое слово или фраза, статьи по которым необходимо найти. Defaults to "apple".
+            n (int, optional): За сколько последних дней необходимо найти новости. Defaults to 3.
+        """
         date_from = (datetime.now() - timedelta(days=n)).date().isoformat()
         date_to = (datetime.now()).date().isoformat()
 
