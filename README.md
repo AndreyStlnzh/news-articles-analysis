@@ -11,11 +11,11 @@ Collect, process, and save data from news sites to analyze the most popular topi
     - Using the API of the news aggregator;
     - Uploading articles on the specified topics (for example, "technology", "science", "apple").
 2) **Transform**
-    - Text preprocessing (stop words, extra characters)
-    - Sentiment analysis
+    - Text preprocessing (stop words, extra characters);
+    - Sentiment analysis;
     - Identifying the main topics (TF-IDF).
 3) **Load**
-    - Save data to PostgreSQL
+    - Save data to PostgreSQL;
     - Save the processed data to a Minio in CSV and Parquet format.
 
 ## Technologies used
