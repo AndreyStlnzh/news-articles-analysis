@@ -39,7 +39,6 @@ class MinioClient:
             length=len_csv_bytes,
         )
 
-
     def download_file(
             self,
             object_name: str
